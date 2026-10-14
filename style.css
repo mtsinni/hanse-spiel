@@ -1,0 +1,454 @@
+/* style.css – das Aussehen des Spiels */
+
+body {
+  margin: 0;
+  font-family: Georgia, serif;
+  background: #2b2118;
+  color: #f3e9d2;
+}
+
+#topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: #3d2e20;
+  border-bottom: 2px solid #8a6a3f;
+}
+#datum { font-size: 20px; min-width: 200px; }
+#status { margin-left: auto; font-size: 16px; }
+#status span { margin-left: 18px; }
+
+button {
+  font-family: inherit;
+  font-size: 15px;
+  padding: 6px 12px;
+  background: #5a4430;
+  color: #f3e9d2;
+  border: 1px solid #8a6a3f;
+  border-radius: 4px;
+  cursor: pointer;
+}
+button:hover { background: #6e543b; }
+button.aktiv { background: #c9a35b; color: #2b2118; }
+button.klein { font-size: 12px; padding: 2px 7px; }
+button:disabled { opacity: 0.4; cursor: not-allowed; }   /* z.B. wenn das Geld nicht reicht */
+
+#hauptbereich {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 16px;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+/* Der Rahmen bekommt die Größe, die Karte füllt ihn aus (Schritt 23) */
+#kartenRahmen {
+  flex: 1 1 520px;
+  max-width: 800px;
+  position: relative;           /* Bezugspunkt für die Zoom-Knöpfe */
+}
+#karte {
+  display: block;
+  width: 100%;
+  touch-action: pan-y;          /* Finger: senkrecht scrollt die Seite, alles andere übernimmt das Spiel */
+  border: 3px solid #8a6a3f;
+  border-radius: 6px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+}
+
+/* ---------- Meer und Land im Stil einer alten Seekarte ---------- */
+/* "transition" lässt Farbwechsel (z.B. im Winter) weich über 3 Sekunden ablaufen */
+.meer { fill: #7ba3b8; transition: fill 3s; }
+.welle { fill: none; stroke: #ffffff; stroke-width: 1.2; stroke-linecap: round; opacity: 0.28; }
+.kueste {
+  fill: none;
+  stroke: #a9cfdc;            /* hellblau = flaches Wasser */
+  stroke-width: 9;
+  stroke-linejoin: round;
+  opacity: 0.8;
+  transition: stroke 3s;
+}
+.land {
+  fill: #dccb98;              /* pergamentfarbenes Land */
+  stroke: #7a6a45;            /* dunkle Küstenlinie */
+  stroke-width: 1.2;
+  stroke-linejoin: round;     /* abgerundete Ecken an der Küste */
+  transition: fill 3s, stroke 3s;
+}
+.meername {
+  fill: #ffffff;
+  opacity: 0.5;
+  font-size: 18px;
+  font-style: italic;
+  letter-spacing: 4px;
+  pointer-events: none;
+}
+
+/* Winter: Schnee auf dem Land, kaltes graues Meer */
+#karte.winter .meer   { fill: #8aa3b0; }
+#karte.winter .land   { fill: #eef1f3; stroke: #8d9aa3; }
+#karte.winter .kueste { stroke: #dce9ef; }
+
+/* Kompassrose */
+.kompass { pointer-events: none; opacity: 0.85; }
+.kompass-ring   { fill: none; stroke: #3b2f22; stroke-width: 1; }
+.kompass-hell   { fill: #f3e9d2; stroke: #3b2f22; stroke-width: 0.6; }
+.kompass-dunkel { fill: #5a4430; stroke: #3b2f22; stroke-width: 0.6; }
+.kompass-n { fill: #3b2f22; font-size: 13px; font-weight: bold; text-anchor: middle; }
+
+/* Rand der Karte: Vignette und Doppelrahmen – Klicks gehen hindurch */
+.ueberlagerung { pointer-events: none; }
+.rahmen { fill: none; stroke: #5a4430; stroke-width: 1.5; opacity: 0.7; }
+
+/* ---------- Städte ---------- */
+.stadt circle { fill: #b23a2a; stroke: #fff; stroke-width: 2; cursor: pointer; }
+.stadt .stadt-kern { fill: #fff; stroke: none; pointer-events: none; }
+.stadt:hover circle { fill: #e05a3f; }
+.stadt.gewaehlt circle { fill: #f0c040; }
+.stadt.gewaehlt .stadt-kern { fill: #b23a2a; }
+.stadt text {
+  fill: #1d1d1d;
+  font-size: 14px;
+  font-weight: bold;
+  pointer-events: none;
+  paint-order: stroke;        /* zuerst den Rand malen, dann die Schrift darüber ... */
+  stroke: #f3e9d2;            /* ... so bekommt die Schrift einen hellen "Lichthof" */
+  stroke-width: 3px;
+}
+
+/* ---------- Schiffe ---------- */
+.schiff { cursor: pointer; }
+.schiff > circle { fill: #f0c040; opacity: 0; }     /* normalerweise unsichtbar ... */
+.schiff.gewaehlt > circle { opacity: 0.6; }         /* ... beim gewählten Schiff gelb */
+.rumpf { fill: #7a4f2a; stroke: #3b2412; stroke-width: 1; }
+.deck  { stroke: #3b2412; stroke-width: 0.8; opacity: 0.6; }
+.segel { stroke: #4a4036; stroke-width: 0.6; }
+
+/* Sanftes Schaukeln auf den Wellen.
+   transform-box und transform-origin sorgen dafür, dass sich das Schiff um seine eigene Mitte dreht. */
+.schiffsform {
+  animation: schaukeln 3.2s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes schaukeln {
+  0%, 100% { transform: rotate(-4deg); }
+  50%      { transform: rotate(4deg); }
+}
+
+.route { fill: none; stroke: #fff; stroke-width: 2; stroke-dasharray: 6 6; opacity: 0.7; }   /* fill none, weil Polylinie */
+.seeweg { stroke: #fff; stroke-width: 1; opacity: 0.35; }   /* nur sichtbar mit ZEIGE_SEEWEGE */
+
+/* rechte Spalte mit Markt und Flotte untereinander */
+#seitenleiste {
+  flex: 0 1 500px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.panel {
+  background: #3d2e20;
+  border: 2px solid #8a6a3f;
+  border-radius: 6px;
+  padding: 12px 16px;
+  font-size: 14px;
+}
+.panel h2 { margin: 0 0 4px 0; }
+.panel h3 { margin: 14px 0 6px 0; font-size: 16px; }
+.panel .hinweis { font-size: 13px; opacity: 0.9; margin-bottom: 10px; }
+.panel table { width: 100%; border-collapse: collapse; }
+.panel th, .panel td { padding: 4px 3px; border-bottom: 1px solid #5a4430; white-space: nowrap; }
+.panel th { text-align: left; font-size: 12px; opacity: 0.8; }
+.panel td.zahl { text-align: right; }
+.guenstig { color: #8fd18f; }
+.teuer    { color: #ff8a7a; }
+.gewinn   { color: #8fd18f; font-weight: bold; }
+#meldung  { margin-top: 10px; min-height: 1.2em; color: #f0c040; }
+/* Piratengebiete auf der Karte */
+.gefahr { fill: #b23a2a; fill-opacity: 0.18; stroke: #b23a2a; stroke-width: 1.5; stroke-dasharray: 4 4; }
+.gefahr-symbol { font-size: 16px; text-anchor: middle; dominant-baseline: middle; opacity: 0.8; pointer-events: none; }
+
+/* Ereignisfenster, das über allem schwebt */
+#ereignis {
+  display: none;
+  position: fixed;                 /* bleibt an derselben Stelle, auch beim Scrollen */
+  top: 25%;
+  left: 50%;
+  transform: translateX(-50%);     /* genau mittig ausrichten */
+  width: min(420px, calc(100% - 64px));
+  z-index: 10;                     /* liegt über allen anderen Elementen */
+  font-size: 15px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+  border-color: #f0c040;
+}
+
+/* Handelsrouten-Editor */
+.station {
+  border: 1px solid #5a4430;
+  border-radius: 4px;
+  padding: 6px 8px;
+  margin-bottom: 6px;
+  line-height: 1.9;
+}
+.station.naechste { border-color: #f0c040; }
+.chip { font-size: 11px; padding: 0 5px; margin: 1px; opacity: 0.5; }
+.chip.an { opacity: 1; background: #c9a35b; color: #2b2118; }
+select, input[type=number] {
+  font-family: inherit;
+  font-size: 12px;
+  background: #2b2118;
+  color: #f3e9d2;
+  border: 1px solid #8a6a3f;
+  border-radius: 3px;
+  padding: 1px 3px;
+}
+
+/* Ereignisse im Marktfenster und auf der Karte */
+.ereignis-banner {
+  background: #5a3a20;
+  border-left: 3px solid #f0c040;
+  border-radius: 3px;
+  padding: 4px 8px;
+  margin: 4px 0;
+  font-size: 13px;
+}
+.ereignis-symbol { font-size: 15px; }
+
+/* Rang-Anzeige mit Fortschrittsbalken */
+#rang { cursor: pointer; }
+#rang:hover { text-decoration: underline; }
+.balken {
+  display: inline-block;
+  width: 70px;
+  height: 8px;
+  margin-left: 6px;
+  background: #2b2118;
+  border: 1px solid #8a6a3f;
+  border-radius: 4px;
+  overflow: hidden;              /* der innere Balken darf nicht herausragen */
+  vertical-align: middle;
+}
+.balken span { display: block; height: 100%; background: #c9a35b; }
+.gesperrt { opacity: 0.5; }
+
+/* Einnahmen grün, Ausgaben rot */
+.plus  { color: #8fd18f; }
+.minus { color: #ff8a7a; }
+
+/* Einträge in der Flottenliste */
+.eintrag {
+  padding: 6px 8px;
+  margin-bottom: 4px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.eintrag:hover { background: #4a3826; }
+.eintrag.gewaehlt { border-color: #f0c040; background: #5a4430; }
+.eintrag .klein { font-size: 12px; opacity: 0.8; }
+
+/* ---------- Chronik und Statistik (Schritt 20) ---------- */
+#statistikFenster {
+  display: none;
+  position: fixed;
+  top: 56px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(900px, calc(100% - 32px));
+  max-height: calc(100vh - 72px);
+  overflow-y: auto;                 /* bei wenig Platz: innen scrollen */
+  z-index: 20;
+  border-color: #c9a35b;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+}
+#statistikFenster .kopf { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+#statistikTabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+
+/* Diagramme: zurückhaltendes Gitter, dünne Linien, Text in Schriftfarbe (nicht in Linienfarbe) */
+.diagramm { position: relative; margin: 6px 0 10px 0; }
+.diagramm-svg { display: block; width: 100%; height: auto; }
+.gitter { stroke: #5a4430; stroke-width: 1; }
+.gitter.null { stroke: #8a6a3f; }
+.achse-text { fill: #cdbf9f; font-size: 12px; }
+.end-label { fill: #f3e9d2; font-size: 13px; }
+.linie { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.kreuz { stroke: #f3e9d2; stroke-width: 1; opacity: 0.45; }
+.punkt { stroke: #3d2e20; stroke-width: 2; }      /* heller Ring um den Punkt, damit er sich abhebt */
+.tooltip {
+  display: none;
+  position: absolute;
+  top: 8px;
+  pointer-events: none;
+  background: #2b2118;
+  border: 1px solid #8a6a3f;
+  border-radius: 4px;
+  padding: 6px 9px;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+.stadt-balken { height: 12px; background: #c9a35b; border-radius: 0 4px 4px 0; }
+
+/* ---------- Seeschlacht (Schritt 21) ---------- */
+#gefecht {
+  display: none;
+  position: fixed;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(560px, calc(100% - 32px));
+  z-index: 15;
+  border-color: #d0503c;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.75);
+}
+#gefecht h2 { margin-bottom: 8px; }
+#gefechtBild { display: block; width: 100%; height: auto; border: 1px solid #5a4430; border-radius: 4px; }
+#gefechtWerte { display: flex; gap: 16px; margin: 10px 0; }
+.gefecht-seite { flex: 1; }
+.rumpf-balken { height: 10px; margin: 4px 0 2px 0; background: #2b2118; border: 1px solid #5a4430; border-radius: 5px; overflow: hidden; }
+.rumpf-balken span { display: block; height: 100%; transition: width 0.5s; }   /* der Balken schrumpft sichtbar */
+#gefechtLog { min-height: 90px; font-size: 13px; line-height: 1.5; margin-bottom: 10px; }
+#gefechtLog div:last-child { color: #f0c040; }                              /* die neueste Zeile hervorheben */
+.gefecht-ergebnis { margin-top: 8px; padding: 6px 8px; background: #2b2118; border-radius: 4px; color: #f3e9d2 !important; }
+#gefechtKnoepfe button { margin: 2px 0; }
+
+/* Mündungsfeuer: ein heller Kreis, der schnell größer und durchsichtig wird */
+.blitz { fill: #ffd27a; animation: blitz 0.45s ease-out forwards; transform-box: fill-box; transform-origin: center; }
+@keyframes blitz {
+  from { opacity: 1; transform: scale(0.4); }
+  to   { opacity: 0; transform: scale(2.2); }
+}
+/* Schadenszahl: steigt auf und verblasst */
+.schadenszahl {
+  fill: #ff8a7a; font-size: 18px; font-weight: bold; text-anchor: middle;
+  paint-order: stroke; stroke: #2b2118; stroke-width: 3px;
+  animation: aufsteigen 1s ease-out forwards;
+}
+@keyframes aufsteigen {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-22px); }
+}
+/* Getroffenes Schiff wackelt kurz */
+.wackler.getroffen { animation: wackeln 0.4s; transform-box: fill-box; transform-origin: center; }
+@keyframes wackeln {
+  0%, 100% { transform: translate(0, 0); }
+  25%      { transform: translate(-1.5px, 1px); }
+  50%      { transform: translate(1.5px, -1px); }
+  75%      { transform: translate(-1px, 0); }
+}
+/* Besiegtes Piratenschiff: kippt, sinkt und verschwindet */
+.wackler.sinkt { animation: sinken 2s ease-in forwards; transform-box: fill-box; transform-origin: center; }
+@keyframes sinken {
+  from { opacity: 1; transform: translateY(0) rotate(0deg); }
+  to   { opacity: 0; transform: translateY(8px) rotate(25deg); }
+}
+
+/* Ton-Knöpfe (Schritt 22): ausgeschaltet etwas blasser */
+button.aus { opacity: 0.55; }
+
+/* ---------- Handy und Tablet (Schritt 23) ---------- */
+
+/* Knöpfe: kein Doppeltipp-Zoom des Browsers (sonst reagieren schnelle Klicks verzögert) */
+button { touch-action: manipulation; }
+
+/* Zoom-Knöpfe unten rechts auf der Karte */
+#zoomKnoepfe {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+#zoomKnoepfe button {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  font-size: 18px;
+  line-height: 1;
+  background: rgba(61, 46, 32, 0.85);
+}
+
+/* Am Computer: Reiterleiste ausblenden – dort sieht man alle Fenster untereinander */
+#reiter { display: none; }
+
+/* Media Query: Alles in diesem Block gilt NUR, wenn das Fenster höchstens 800 Pixel breit ist */
+@media (max-width: 800px) {
+  body { font-size: 15px; }
+
+  /* Obere Leiste: bleibt oben stehen; Zeile 1 = Datum und Status, Zeile 2 = Knöpfe */
+  #topbar {
+    position: sticky;
+    top: 0;
+    z-index: 8;
+    gap: 6px;
+    padding: 6px 8px;
+  }
+  #datum   { order: 1; font-size: 16px; min-width: 0; }
+  #status  { order: 2; font-size: 13px; }
+  #status span { margin-left: 8px; }
+  #topbar button { order: 3; padding: 7px 9px; font-size: 14px; }
+  .knopftext { display: none; }        /* nur Symbole */
+  .balken { width: 40px; }
+
+  /* Karte und Fenster untereinander, über die volle Breite */
+  #hauptbereich { flex-direction: column; flex-wrap: nowrap; padding: 8px; gap: 8px; align-items: stretch; }
+  #kartenRahmen {
+    flex: none;
+    max-width: none;
+    position: sticky;                  /* die Karte bleibt unter der Leiste stehen */
+    top: var(--leiste-h, 0px);
+    z-index: 6;
+  }
+  #seitenleiste { flex: none; gap: 8px; }
+
+  /* Größere Schrift auf der Karte – sie wird ja stark verkleinert dargestellt */
+  .stadt text { font-size: 22px; stroke-width: 4px; }
+  .meername { font-size: 24px; }
+
+  /* Reiterleiste: bleibt unter der Karte stehen, lässt sich seitlich wischen */
+  #reiter {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    position: sticky;
+    top: calc(var(--leiste-h, 0px) + var(--karte-h, 0px));
+    z-index: 5;
+    padding: 6px 0;
+    background: #2b2118;
+  }
+  #reiter button { flex: 0 0 auto; font-size: 13px; padding: 7px 10px; }
+
+  /* Immer nur ein Fenster sichtbar – das, dessen Reiter gewählt ist */
+  #seitenleiste > .panel:not(.sichtbar) { display: none; }
+
+  /* Fenster: weniger Rand, breite Tabellen dürfen seitlich gewischt werden */
+  .panel { padding: 10px; overflow-x: auto; font-size: 14px; }
+  .panel table { font-size: 12.5px; }
+  .panel th, .panel td { padding: 5px 3px; }
+
+  /* Fingerfreundliche Knöpfe (mindestens etwa 36 Pixel hoch) */
+  button.klein { font-size: 13px; padding: 7px 9px; }
+  .eintrag { padding: 10px 8px; }
+
+  /* Nachrichten-, Gefechts- und Statistikfenster: fast bildschirmfüllend */
+  #ereignis, #gefecht, #statistikFenster {
+    top: 8px;
+    width: calc(100% - 16px);
+    max-height: calc(100vh - 16px);
+    overflow-y: auto;
+  }
+  #gefechtWerte { flex-direction: column; gap: 6px; }
+  .diagramm-svg { touch-action: pan-y; }
+}
+
+/* Handy quer (wenig Höhe): Karte nicht festhalten, sonst bliebe für die Fenster kein Platz */
+@media (max-width: 800px) and (max-height: 560px) {
+  #kartenRahmen { position: static; }
+  #reiter { top: var(--leiste-h, 0px); }
+}
+
+.ki-schiff { cursor: pointer; }

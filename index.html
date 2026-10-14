@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Farbe der Browserleiste auf dem Handy -->
+  <meta name="theme-color" content="#3d2e20">
+  <title>Hanse – Schritt 23</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <!-- Aufbau der Seite. Aussehen: style.css, Logik: Ordner js/ -->
+  <div id="topbar">
+    <span id="datum">–</span>
+    <button id="btnPause">⏸ Pause</button>
+    <button data-speed="0.5">0,5×</button>
+    <button data-speed="1">1,0×</button>
+    <button data-speed="1.5">1,5×</button>
+    <!-- Die Texte in <span class="knopftext"> werden auf dem Handy ausgeblendet – dann bleibt nur das Symbol -->
+    <button id="btnSpeichern" title="Speichern">💾<span class="knopftext"> Speichern</span></button>
+    <button id="btnNeu" title="Neues Spiel">🆕<span class="knopftext"> Neues Spiel</span></button>
+    <button id="btnStatistik" title="Chronik und Statistik">📊<span class="knopftext"> Chronik</span></button>
+    <!-- Ton (Schritt 22) -->
+    <button id="btnEffekte">🔊</button>
+    <button id="btnMusik">🎵</button>
+    <div id="status">
+      <span id="rang" title="Klicken für eine Übersicht aller Ränge"></span>
+      <span id="gold"></span>
+      <span id="flottenInfo"></span>
+    </div>
+  </div>
+
+  <div id="hauptbereich">
+    <!-- Die Karte mit Zoom-Knöpfen (Schritt 23) -->
+    <div id="kartenRahmen">
+      <svg id="karte" viewBox="0 0 800 500"></svg>
+      <div id="zoomKnoepfe">
+        <button data-zoom="rein" title="Hineinzoomen">+</button>
+        <button data-zoom="raus" title="Herauszoomen">−</button>
+        <button data-zoom="reset" title="Ganze Karte">⟲</button>
+      </div>
+    </div>
+    <!-- Alle Fenster in einer gemeinsamen Spalte -->
+    <div id="seitenleiste">
+      <!-- Reiterleiste: nur auf dem Handy sichtbar, dort ist immer nur ein Fenster zu sehen (Schritt 23) -->
+      <nav id="reiter">
+        <button data-reiter="markt">🏪 Markt</button>
+        <button data-reiter="betriebe">🏭 Betriebe</button>
+        <button data-reiter="flotte">⚓ Flotte</button>
+        <button data-reiter="route">🧭 Route</button>
+        <button data-reiter="auftraege">📜 Aufträge</button>
+        <button data-reiter="kasse">📒 Kasse</button>
+        <button data-reiter="rangliste">🏆 Rangliste</button>
+      </nav>
+      <div id="markt" class="panel">Klicke auf eine Stadt, um ihren Markt zu sehen.</div>
+      <!-- Betriebe und Kontor der gewählten Stadt -->
+      <div id="betriebe" class="panel"></div>
+      <div id="flotte" class="panel"></div>
+      <!-- Handelsroute des gewählten Schiffs -->
+      <div id="route" class="panel"></div>
+      <!-- Aufträge (Schritt 18) -->
+      <div id="auftraege" class="panel"></div>
+      <!-- Rangliste gegen die Konkurrenten -->
+      <div id="rangliste" class="panel"></div>
+      <!-- Kassenbuch -->
+      <div id="kasse" class="panel"></div>
+    </div>
+  </div>
+
+  <!-- Ereignisfenster, z.B. für Piratenüberfälle -->
+  <div id="ereignis" class="panel">
+    <h2 id="ereignisTitel"></h2>
+    <p id="ereignisText"></p>
+    <button id="ereignisOk">Weiter</button>
+  </div>
+
+  <!-- Seeschlacht (Schritt 21) -->
+  <div id="gefecht" class="panel">
+    <h2 id="gefechtTitel"></h2>
+    <svg id="gefechtBild" viewBox="0 0 400 120"></svg>
+    <div id="gefechtWerte"></div>
+    <div id="gefechtLog"></div>
+    <div id="gefechtKnoepfe"></div>
+  </div>
+
+  <!-- Chronik und Statistik (Schritt 20) -->
+  <div id="statistikFenster" class="panel">
+    <div class="kopf">
+      <h2>📊 Chronik und Statistik</h2>
+      <button id="statistikZu" title="Schließen">✕</button>
+    </div>
+    <div id="statistikTabs">
+      <button data-tab="vermoegen">💰 Vermögen</button>
+      <button data-tab="schiffe">⚓ Flotten</button>
+      <button data-tab="staedte">🏘 Städte</button>
+      <button data-tab="chronik">📖 Chronik</button>
+    </div>
+    <div id="statistikInhalt"></div>
+  </div>
+
+
+  <!-- Die Logik, aufgeteilt nach Themen.
+       WICHTIG: Die Reihenfolge zählt! Jede Datei darf nur benutzen, was vorher schon geladen ist,
+       wenn sie es SOFORT beim Laden braucht. Funktionen, die erst später aufgerufen werden,
+       dürfen auch in späteren Dateien stehen. -->
+  <script src="js/daten.js"></script>
+  <script src="js/hilfen.js"></script>
+  <script src="js/ton.js"></script>
+  <script src="js/wirtschaft.js"></script>
+  <script src="js/staedte.js"></script>
+  <script src="js/ansehen.js"></script>
+  <script src="js/handel.js"></script>
+  <script src="js/segeln.js"></script>
+  <script src="js/piraten.js"></script>
+  <script src="js/gefecht.js"></script>
+  <script src="js/betriebe.js"></script>
+  <script src="js/ereignisse.js"></script>
+  <script src="js/auftraege.js"></script>
+  <script src="js/routen.js"></script>
+  <script src="js/konkurrenten.js"></script>
+  <script src="js/statistik.js"></script>
+  <script src="js/karte.js"></script>
+  <script src="js/anzeige.js"></script>
+  <script src="js/steuerung.js"></script>
+  <script src="js/speichern.js"></script>
+  <script src="js/zustand.js"></script>
+  <script src="js/mobil.js"></script>
+  <script src="js/start.js"></script>
+</body>
+</html>
