@@ -406,7 +406,6 @@ button { touch-action: manipulation; }
   #seitenleiste { flex: none; gap: 8px; }
 
   /* Größere Schrift auf der Karte – sie wird ja stark verkleinert dargestellt */
-  .stadt text { font-size: 22px; stroke-width: 4px; }
   .meername { font-size: 24px; }
 
   /* Reiterleiste: bleibt unter der Karte stehen, lässt sich seitlich wischen */

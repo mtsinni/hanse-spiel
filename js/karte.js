@@ -289,3 +289,88 @@ function zeichneSchiffe() {
     }
   }
 }
+
+// ---------- Automatische Beschriftung der Städte ----------
+//
+// Problem: Lübeck, Hamburg, Rostock und Bremen liegen dicht beieinander. Auf kleinen Bildschirmen
+// überlappen sich ihre Namen, wenn alle einfach rechts neben der Stadt stehen.
+//
+// Lösung in drei Teilen:
+// 1. Die Schrift hat auf dem BILDSCHIRM immer dieselbe Größe (12 bzw. 14 Pixel) – egal wie groß
+//    die Karte gerade dargestellt wird und wie weit hineingezoomt ist.
+// 2. Jeder Name probiert vier Plätze (rechts, links, oben, unten) und nimmt den ersten, der frei ist.
+//    Die größten Städte sind zuerst dran und bekommen so die besten Plätze.
+// 3. Passt ein Name nirgends hin, versuchen wir es ohne die Symbole 🔨🏭 – und wenn auch das nicht
+//    geht, wird er ausgeblendet. Beim Hineinzoomen ist dann wieder Platz.
+// Dieses Vorgehen ("nimm die erste passende Möglichkeit") ist wieder eine gierige Strategie wie bei der KI.
+
+function ueberlappt(a, b) {
+  // Zwei Rechtecke überlappen, wenn sie sich sowohl waagerecht als auch senkrecht überschneiden
+  return a.x1 < b.x2 && a.x2 > b.x1 && a.y1 < b.y2 && a.y2 > b.y1;
+}
+
+function platziereStadtNamen() {
+  if (!staedte[0].svgKreis) return;                  // Karte noch nicht gezeichnet
+  const breiteAufBildschirm = karte.getBoundingClientRect().width;
+  if (!breiteAufBildschirm) return;                  // Karte (noch) nicht sichtbar
+  const sichtbareBreite = (typeof ansicht !== "undefined") ? ansicht.b : 800;
+  const pixelProEinheit = breiteAufBildschirm / sichtbareBreite;
+  // Schriftgröße auf dem Bildschirm: sehr kleine Handys 11 px, Handys 12 px, sonst 14 px
+  const pixel = window.innerWidth < 400 ? 11 : window.innerWidth <= 800 ? 12 : 14;
+  const schrift = pixel / pixelProEinheit;           // umgerechnet in Karteneinheiten
+  const luft = schrift * 0.12;                       // etwas Abstand zwischen den Namen
+
+  // Belegte Flächen: zuerst alle Stadtkreise, damit kein Name über einer Stadt liegt
+  // (Jede Fläche merkt sich, zu welcher Stadt sie gehört – der EIGENE Kreis ist für einen Namen kein Hindernis.)
+  const belegt = staedte.map(s => {
+    const r = Number(s.svgKreis.getAttribute("r")) + luft;
+    return { stadt: s.name, x1: s.x - r, x2: s.x + r, y1: s.y - r, y2: s.y + r };
+  });
+
+  // Deine Schiffe im Hafen sind auch Hindernisse – sonst läge ein Schiff über dem Namen
+  for (const sch of spiel.schiffe) {
+    if (!sch.ort) continue;
+    const p = schiffPosition(sch);
+    belegt.push({ stadt: null, x1: p.x - 15, x2: p.x + 15, y1: p.y - 12, y2: p.y + 12 });
+  }
+
+  // Große Städte zuerst. [...staedte] macht eine Kopie, damit die Original-Liste unsortiert bleibt.
+  const reihenfolge = [...staedte].sort((a, b) => spiel.einwohner[b.name] - spiel.einwohner[a.name]);
+
+  for (const s of reihenfolge) {
+    const t = s.svgText;
+    t.style.display = "";
+    t.style.fontSize = schrift + "px";               // in einem SVG sind "px" Karteneinheiten
+    t.style.strokeWidth = (schrift * 0.22) + "px";
+    const a = Number(s.svgKreis.getAttribute("r")) + schrift * 0.25;   // Abstand vom Stadtmittelpunkt
+    const mitteY = s.y + schrift * 0.35;             // so steht der Text mittig neben dem Punkt
+    // Acht mögliche Plätze, der Reihe nach probiert: rechts, links, oben, unten und die vier Ecken
+    const plaetze = [
+      [s.x + a, mitteY, "start"], [s.x - a, mitteY, "end"],
+      [s.x, s.y - a, "middle"],   [s.x, s.y + a + schrift * 0.75, "middle"],
+      [s.x + a * 0.7, s.y - a * 0.7, "start"], [s.x - a * 0.7, s.y - a * 0.7, "end"],
+      [s.x + a * 0.7, s.y + a * 0.7 + schrift * 0.75, "start"], [s.x - a * 0.7, s.y + a * 0.7 + schrift * 0.75, "end"]
+    ];
+    let platziert = false;
+
+    for (const text of [s.beschriftung || s.name, s.name]) {   // erst mit Symbolen, dann ohne
+      t.textContent = text;
+      for (const [x, y, anker] of plaetze) {
+        t.setAttribute("x", x);
+        t.setAttribute("y", y);
+        t.setAttribute("text-anchor", anker);
+        // getBBox() misst, wie viel Platz der Text an dieser Stelle WIRKLICH braucht
+        // (genauer als jede Schätzung – Symbole wie 🔨 sind zum Beispiel höher als Buchstaben)
+        const m = t.getBBox();
+        const box = { x1: m.x - luft, x2: m.x + m.width + luft, y1: m.y - luft, y2: m.y + m.height + luft };
+        if (box.x1 < 2 || box.x2 > 798 || box.y1 < 2 || box.y2 > 498) continue;   // nicht über den Kartenrand
+        if (belegt.some(b => b.stadt !== s.name && ueberlappt(b, box))) continue;   // Platz schon belegt
+        belegt.push(box);
+        platziert = true;
+        break;
+      }
+      if (platziert) break;
+    }
+    if (!platziert) t.style.display = "none";        // kein Platz: erst beim Hineinzoomen sichtbar
+  }
+}

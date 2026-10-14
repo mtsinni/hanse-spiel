@@ -92,6 +92,7 @@ function aktualisiereStadtGroesse() {
     stadt.svgKreis.setAttribute("r", r.toFixed(1));
     stadt.svgKern.setAttribute("r", (r * 0.38).toFixed(1));
   }
+  platziereStadtNamen();      // größere Kreise brauchen mehr Abstand zum Namen
 }
 
 // Die Infozeile oben im Marktfenster

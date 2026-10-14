@@ -255,6 +255,7 @@ document.getElementById("betriebe").addEventListener("click", (e) => {
 function aktualisiereStadtNamen() {
   for (const stadt of staedte) {
     const hatBetrieb = spiel.betriebe.some(b => b.stadt === stadt.name);   // some = "gibt es mindestens einen?"
-    stadt.svgText.textContent = stadt.name + (stadt.werft ? " 🔨" : "") + (hatBetrieb ? " 🏭" : "");
+    stadt.beschriftung = stadt.name + (stadt.werft ? " 🔨" : "") + (hatBetrieb ? " 🏭" : "");
   }
+  platziereStadtNamen();   // freie Plätze für die Namen suchen (karte.js)
 }

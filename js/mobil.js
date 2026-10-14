@@ -28,6 +28,7 @@ function setzeAnsicht() {
 
   // Vergrößert: Ein Finger verschiebt die Karte. Ganze Karte: Ein Finger scrollt die Seite.
   karte.style.touchAction = ansicht.b < 799 ? "none" : "pan-y";
+  platziereStadtNamen();      // beim Zoomen ändert sich der Platz für die Namen
 }
 
 // Bildschirmposition (Pixel) -> Kartenkoordinaten (0…800, 0…500) im aktuellen Ausschnitt
@@ -154,5 +155,7 @@ function merkeHoehen() {
 // ResizeObserver meldet sich, sobald sich die Größe eines Elements ändert (Drehen des Handys, Umbruch …)
 new ResizeObserver(merkeHoehen).observe(document.getElementById("topbar"));
 new ResizeObserver(merkeHoehen).observe(document.getElementById("kartenRahmen"));
+// Ändert sich die Größe der Karte (Fenster, Drehen des Handys), müssen die Namen neu verteilt werden
+new ResizeObserver(() => platziereStadtNamen()).observe(document.getElementById("karte"));
 
 setzeAnsicht();

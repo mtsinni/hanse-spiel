@@ -99,6 +99,7 @@ function erstelleSchiff(typId, name, ort) {
   }
   spiel.naechsteSchiffId++;           // die nächste Nummer ist eins höher
   spiel.schiffe.push(schiff);         // push = hinten an die Liste anhängen
+  platziereStadtNamen();     // ein neues Schiff im Hafen braucht Platz
   return schiff;
 }
 

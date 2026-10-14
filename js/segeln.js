@@ -86,6 +86,7 @@ function segeln(schiff, zielName) {
   };
   schiff.ort = null;
   spieleTon("segel");                   // Schritt 22: Segel fangen Wind
+  platziereStadtNamen();                // der Platz im Hafen ist jetzt frei
   spiel.meldung = "⛵ " + schiff.name + " sticht in See nach " + zielName + ".";
 }
 
@@ -116,6 +117,7 @@ function pruefeAnkunft() {
       stadtAngeklickt(findeStadt(ziel));
     }
     spiel.meldung = "⚓ " + schiff.name + " ist in " + ziel + " angekommen.";
+    platziereStadtNamen();          // das Schiff braucht jetzt Platz im Hafen
 
     // Schiffe mit aktiver Route handeln automatisch und fahren weiter
     if (schiff.route && schiff.route.aktiv) {
